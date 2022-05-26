@@ -70,7 +70,7 @@ func (n *NameChecker) Check(name string) error {
 		}
 	}
 
-	if len(nameParts) < 2 {
+	if partLen := len(nameParts); partLen <= 0 || partLen < n.MinWords {
 		return fmt.Errorf("check: name too short, minimum are %d", n.MinWords)
 	}
 

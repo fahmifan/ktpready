@@ -28,7 +28,7 @@ func run(args []string) error {
 	}
 	defer bannedWordFile.Close()
 
-	nameChecker := &ktpready.NameChecker{}
+	nameChecker := &ktpready.NameChecker{MinWords: 2}
 
 	err = nameChecker.LoadDirtyWords(dirtyWordFile)
 	if err != nil {
@@ -40,7 +40,15 @@ func run(args []string) error {
 		return fmt.Errorf("load dirty words: %w", err)
 	}
 
-	nameChecker.Check("tai ucing")
+	if len(args) == 1 {
+		return nil
+	}
 
+	err = nameChecker.Check(args[1])
+	if err != nil {
+		return fmt.Errorf("check: %w", err)
+	}
+
+	fmt.Println("name seems legit!")
 	return nil
 }
