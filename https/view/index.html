@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTP Ready</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <script src="https://unpkg.com/vue@3"></script>
+</head>
+<body>
+    <main id="app">
+        <h1>KTP Ready</h1>
+        <p>Check if a name can be used in KTP</p>
+        <input v-model="name" type="text" placeholder="Name..." />
+        <div v-show="toast.show" >
+            <p v-if="toast.type === 'error'">Error: {{ toast.message }}</p>
+            <p v-else-if="toast.type === 'info'">Info: {{ toast.message }}</p>
+        </div>
+        <button @click="checkName()">Check</button>
+    </main>
+
+<script>
+    const { createApp } = Vue
+
+    createApp({
+        data() {
+            return {
+                name: "",
+                toast: {
+                    show: false,
+                    type: "",
+                    message: "",
+                },
+                toast: "",
+            }
+        },
+        methods: {
+            checkName() {
+                fetch("/ktp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({name: this.name})
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (res.error) {
+                        this.toast = {
+                            show: true,
+                            message: res.error,
+                            type: "error",
+                        }
+                    } else {
+                        this.toast = {
+                            show: true,
+                            message: "name looks legit!",
+                            type: "info",
+                        }
+                    }
+
+                    let self = this
+                    setTimeout(function() {
+                        self.toast = {
+                            show: false,
+                            message: "",
+                            type: ""
+                        }
+                    }, 2000)
+                })
+            }
+        }
+    })
+    .mount("#app")
+</script>
+</body>
+</html>
