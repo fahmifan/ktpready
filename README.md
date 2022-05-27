@@ -16,3 +16,4 @@ ktpready "john doe"
 - [x] a working library, implemented as CLI
 - [ ] enrich the dirty & banned corpus
 - [ ] (WIP) a nice web
+    - [x] simple web
