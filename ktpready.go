@@ -8,12 +8,32 @@ import (
 	"strings"
 )
 
+const (
+	DefaultMaxWords = 60
+	DefaultMinWords = 2
+)
+
 type Dictionary map[string]struct{}
 
 type NameChecker struct {
 	MinWords    int // default to no minimum
+	MaxChar     int
 	DirtyWords  Dictionary
 	BannedWords Dictionary
+}
+
+// NewNameChecker
+func NewNameChecker(minWord, maxWord int) *NameChecker {
+	if maxWord < 0 {
+		maxWord = DefaultMaxWords
+	}
+	if minWord < 0 {
+		minWord = DefaultMinWords
+	}
+	return &NameChecker{
+		MinWords: minWord,
+		MaxChar:  maxWord,
+	}
 }
 
 func (n *NameChecker) LoadDirtyWords(src io.Reader) error {
@@ -57,6 +77,7 @@ func (n *NameChecker) Check(name string) error {
 	}
 
 	nameParts := strings.Split(name, " ")
+	countWord := 0
 	for _, part := range nameParts {
 		part = strings.ToLower(part)
 		if hasNonAlphabet(part) {
@@ -67,6 +88,11 @@ func (n *NameChecker) Check(name string) error {
 		}
 		if _, isBanned := n.BannedWords[part]; isBanned {
 			return fmt.Errorf("check: name has banned word (%s)", part)
+		}
+
+		countWord += len(part)
+		if countWord > n.MaxChar {
+			return fmt.Errorf("check: name too long, max characters are %d", n.MaxChar)
 		}
 	}
 

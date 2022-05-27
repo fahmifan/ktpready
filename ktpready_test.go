@@ -8,9 +8,7 @@ import (
 )
 
 func TestKTPReady_Check(t *testing.T) {
-	nameChecker := &NameChecker{
-		MinWords: 2,
-	}
+	nameChecker := NewNameChecker(2, 60)
 	dirtyWords := `
 alpha
 beta
@@ -42,6 +40,18 @@ ban3
 	t.Run("failed: too short", func(t *testing.T) {
 		err = nameChecker.Check("john")
 		require.Error(t, err)
+	})
+
+	t.Run("failed: too long", func(t *testing.T) {
+		longName := strings.Repeat("a", nameChecker.MaxChar+1)
+		err = nameChecker.Check(longName)
+		require.Error(t, err)
+	})
+
+	t.Run("success: max long", func(t *testing.T) {
+		longName := "john " + strings.Repeat("b", nameChecker.MaxChar-4)
+		err = nameChecker.Check(longName)
+		require.NoError(t, err)
 	})
 
 	t.Run("success: no bad names", func(t *testing.T) {
