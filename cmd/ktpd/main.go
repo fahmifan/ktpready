@@ -33,7 +33,11 @@ func run(args []string) error {
 	nameChecker.LoadBannedWords(bannedWordFile)
 	nameChecker.LoadDirtyWords(dirtyWordFile)
 
-	server := https.NewServer(nameChecker)
+	port := "8080"
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	server := https.NewServer(port, nameChecker)
 	err = server.Run()
 	if err != nil {
 		return fmt.Errorf("run server: %w", err)

@@ -1,7 +1,6 @@
 package https
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/fahmifan/ktpready"
@@ -14,30 +13,30 @@ import (
 type Map map[string]interface{}
 
 type Server struct {
-	port        uint
+	Port        string
 	mux         *chi.Mux
 	server      *http.Server
 	render      *renderer.Render
 	NameChecker *ktpready.NameChecker
 }
 
-func NewServer(NameChecker *ktpready.NameChecker) *Server {
+func NewServer(port string, nameChecker *ktpready.NameChecker) *Server {
 	return &Server{
-		port: 8080,
+		Port: port,
 		render: renderer.New(renderer.Options{
 			ParseGlobPattern: "https/view/*.html",
 			LeftDelim:        "[[",
 			RightDelim:       "]]",
 		}),
-		NameChecker: NameChecker,
+		NameChecker: nameChecker,
 	}
 }
 
 func (s *Server) Run() error {
 	s.routes()
-	s.server = &http.Server{Addr: fmt.Sprintf(":%d", s.port), Handler: s.mux}
+	s.server = &http.Server{Addr: ":" + s.Port, Handler: s.mux}
 
-	log.Info().Msgf("run server at localhost:%d", s.port)
+	log.Info().Msgf("run server at localhost:%s", s.Port)
 	return s.server.ListenAndServe()
 }
 
