@@ -1,6 +1,7 @@
 # KTP Ready
 
-Checks if a name can be used in KTP/KK or not
+Checks if a name can be used in KTP/KK or not. 
+Try at https://ktpready.fly.dev/
 
 ## Build
 ```
@@ -8,9 +9,16 @@ make build
 ```
 
 ## Usage
+The CLI
 ```
-ktpready "john doe"
+./ktpc "john doe"
 ```
+
+Run the server
+```
+./ktpd
+```
+
 
 ## Feature
 - [x] a working library, implemented as CLI
