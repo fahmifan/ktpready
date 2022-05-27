@@ -17,6 +17,26 @@ func main() {
 }
 
 func run(args []string) error {
+	nameChecker := &ktpready.NameChecker{MinWords: 2}
+	err := loadCorpus(nameChecker)
+	if err != nil {
+		return fmt.Errorf("load corpus: %w", err)
+	}
+
+	port := "8080"
+	if os.Getenv("PORT") != "" {
+		port = os.Getenv("PORT")
+	}
+	server := https.NewServer(port, nameChecker)
+	err = server.Run()
+	if err != nil {
+		return fmt.Errorf("run server: %w", err)
+	}
+
+	return nil
+}
+
+func loadCorpus(nameChecker *ktpready.NameChecker) error {
 	dirtyWordFile, err := os.Open("./corpus/dirty_words.txt")
 	if err != nil {
 		return fmt.Errorf("open badwords: %w", err)
@@ -29,19 +49,8 @@ func run(args []string) error {
 	}
 	defer bannedWordFile.Close()
 
-	nameChecker := &ktpready.NameChecker{MinWords: 2}
 	nameChecker.LoadBannedWords(bannedWordFile)
 	nameChecker.LoadDirtyWords(dirtyWordFile)
-
-	port := "8080"
-	if os.Getenv("PORT") != "" {
-		port = os.Getenv("PORT")
-	}
-	server := https.NewServer(port, nameChecker)
-	err = server.Run()
-	if err != nil {
-		return fmt.Errorf("run server: %w", err)
-	}
 
 	return nil
 }
