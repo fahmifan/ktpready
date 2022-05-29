@@ -2,6 +2,7 @@ package https
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/fahmifan/ktpready"
 	"github.com/go-chi/chi/v5"
@@ -26,6 +27,7 @@ type Server struct {
 	nameChecker          *ktpready.NameChecker
 	concurrent           int
 	enableFathomAnalytic bool
+	favicon              []byte
 }
 
 type ServerOpt func(s *Server)
@@ -80,6 +82,12 @@ func NewServer(nameChecker *ktpready.NameChecker, opts ...ServerOpt) *Server {
 }
 
 func (s *Server) Run() error {
+	favicon, err := os.ReadFile("https/icon/favicon.ico")
+	if err != nil {
+		return err
+	}
+	s.favicon = favicon
+
 	s.routes()
 	s.server = &http.Server{Addr: ":" + s.port, Handler: s.mux}
 
@@ -103,6 +111,9 @@ func (s *Server) routes() {
 		})
 	})
 	r.Post("/ktp", ktp.create())
+	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Write(s.favicon)
+	})
 
 	s.mux = r
 }
