@@ -112,6 +112,7 @@ func (s *Server) routes() {
 	})
 	r.Post("/ktp", ktp.create())
 	r.Get("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "image/x-icon")
 		w.Write(s.favicon)
 	})
 
