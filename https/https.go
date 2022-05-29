@@ -12,37 +12,70 @@ import (
 
 type Map map[string]interface{}
 
+const (
+	DefaultConcurrent = 10
+	DefaultPort       = "8080"
+)
+
 type Server struct {
-	Port        string
+	port        string
 	mux         *chi.Mux
 	server      *http.Server
 	render      *renderer.Render
-	NameChecker *ktpready.NameChecker
+	nameChecker *ktpready.NameChecker
+	concurrent  int
 }
 
-func NewServer(port string, nameChecker *ktpready.NameChecker) *Server {
-	return &Server{
-		Port: port,
+type ServerOpt func(s *Server)
+
+// Groups of server options
+var ServerOpts = struct {
+	WithConcurrent func(c int) ServerOpt
+	WithPort       func(port string) ServerOpt
+}{
+	WithConcurrent: func(c int) ServerOpt {
+		return func(s *Server) {
+			s.concurrent = c
+		}
+	},
+	WithPort: func(port string) ServerOpt {
+		return func(s *Server) {
+			s.port = port
+		}
+	},
+}
+
+func NewServer(nameChecker *ktpready.NameChecker, opts ...ServerOpt) *Server {
+	server := &Server{
+		port: DefaultPort,
 		render: renderer.New(renderer.Options{
 			ParseGlobPattern: "https/view/*.html",
 			LeftDelim:        "[[",
 			RightDelim:       "]]",
 		}),
-		NameChecker: nameChecker,
+		nameChecker: nameChecker,
+		concurrent:  DefaultConcurrent,
 	}
+
+	for _, opt := range opts {
+		opt(server)
+	}
+
+	return server
 }
 
 func (s *Server) Run() error {
 	s.routes()
-	s.server = &http.Server{Addr: ":" + s.Port, Handler: s.mux}
+	s.server = &http.Server{Addr: ":" + s.port, Handler: s.mux}
 
-	log.Info().Msgf("run server at localhost:%s", s.Port)
+	log.Info().Msgf("run server at localhost:%s", s.port)
 	return s.server.ListenAndServe()
 }
 
 func (s *Server) routes() {
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
+	r.Use(middleware.Throttle(s.concurrent))
 
 	ktp := KTP{s}
 

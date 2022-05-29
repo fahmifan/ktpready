@@ -23,13 +23,11 @@ func run(args []string) error {
 		return fmt.Errorf("load corpus: %w", err)
 	}
 
-	port := "8080"
-	if os.Getenv("PORT") != "" {
-		port = os.Getenv("PORT")
-	}
-	server := https.NewServer(port, nameChecker)
-	err = server.Run()
-	if err != nil {
+	server := https.NewServer(
+		nameChecker,
+		https.ServerOpts.WithPort(os.Getenv("PORT")),
+	)
+	if err = server.Run(); err != nil {
 		return fmt.Errorf("run server: %w", err)
 	}
 

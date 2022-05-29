@@ -26,7 +26,7 @@ func (k *KTP) create() http.HandlerFunc {
 
 		log.Error().Str("name", req.Name).Msg("")
 
-		if err := k.NameChecker.Check(req.Name); err != nil {
+		if err := k.nameChecker.Check(req.Name); err != nil {
 			k.render.JSON(w, http.StatusBadRequest, Map{
 				"error": err.Error(),
 			})
