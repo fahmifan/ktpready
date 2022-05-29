@@ -26,6 +26,7 @@ func run(args []string) error {
 	server := https.NewServer(
 		nameChecker,
 		https.ServerOpts.WithPort(os.Getenv("PORT")),
+		https.ServerOpts.WithFathomAnalytics(os.Getenv("ENABLE_FATHOM_ANALYTIC") == "true"),
 	)
 	if err = server.Run(); err != nil {
 		return fmt.Errorf("run server: %w", err)

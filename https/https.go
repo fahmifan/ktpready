@@ -13,34 +13,48 @@ import (
 type Map map[string]interface{}
 
 const (
-	DefaultConcurrent = 10
-	DefaultPort       = "8080"
+	DefaultConcurrent           = 10
+	DefaultPort                 = "8080"
+	DefaultEnableFathomAnalytic = false
 )
 
 type Server struct {
-	port        string
-	mux         *chi.Mux
-	server      *http.Server
-	render      *renderer.Render
-	nameChecker *ktpready.NameChecker
-	concurrent  int
+	port                 string
+	mux                  *chi.Mux
+	server               *http.Server
+	render               *renderer.Render
+	nameChecker          *ktpready.NameChecker
+	concurrent           int
+	enableFathomAnalytic bool
 }
 
 type ServerOpt func(s *Server)
 
 // Groups of server options
 var ServerOpts = struct {
-	WithConcurrent func(c int) ServerOpt
-	WithPort       func(port string) ServerOpt
+	WithConcurrent      func(c int) ServerOpt
+	WithPort            func(port string) ServerOpt
+	WithFathomAnalytics func(enable bool) ServerOpt
 }{
 	WithConcurrent: func(c int) ServerOpt {
 		return func(s *Server) {
+			if c < 1 {
+				return
+			}
 			s.concurrent = c
 		}
 	},
 	WithPort: func(port string) ServerOpt {
 		return func(s *Server) {
+			if port == "" {
+				return
+			}
 			s.port = port
+		}
+	},
+	WithFathomAnalytics: func(enable bool) ServerOpt {
+		return func(s *Server) {
+			s.enableFathomAnalytic = enable
 		}
 	},
 }
@@ -53,8 +67,9 @@ func NewServer(nameChecker *ktpready.NameChecker, opts ...ServerOpt) *Server {
 			LeftDelim:        "[[",
 			RightDelim:       "]]",
 		}),
-		nameChecker: nameChecker,
-		concurrent:  DefaultConcurrent,
+		nameChecker:          nameChecker,
+		concurrent:           DefaultConcurrent,
+		enableFathomAnalytic: DefaultEnableFathomAnalytic,
 	}
 
 	for _, opt := range opts {
@@ -83,7 +98,9 @@ func (s *Server) routes() {
 		s.render.JSON(w, http.StatusOK, Map{"ping": "pong"})
 	})
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		s.render.HTML(w, http.StatusOK, "index.html", Map{})
+		s.render.HTML(w, http.StatusOK, "index.html", Map{
+			"EnableFathom": s.enableFathomAnalytic,
+		})
 	})
 	r.Post("/ktp", ktp.create())
 
