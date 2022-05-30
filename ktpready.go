@@ -24,7 +24,7 @@ type NameChecker struct {
 
 // NewNameChecker
 func NewNameChecker(minWord, maxWord int) *NameChecker {
-	if maxWord < 0 {
+	if maxWord <= 0 {
 		maxWord = DefaultMaxWords
 	}
 	if minWord < 0 {

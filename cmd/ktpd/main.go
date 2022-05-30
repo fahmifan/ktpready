@@ -17,7 +17,7 @@ func main() {
 }
 
 func run(args []string) error {
-	nameChecker := &ktpready.NameChecker{MinWords: 2}
+	nameChecker := ktpready.NewNameChecker(ktpready.DefaultMinWords, ktpready.DefaultMaxWords)
 	err := loadCorpus(nameChecker)
 	if err != nil {
 		return fmt.Errorf("load corpus: %w", err)
